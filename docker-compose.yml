@@ -1,0 +1,7 @@
+services:
+  pdftool:
+    build: .
+    container_name: pdftool
+    restart: unless-stopped
+    ports:
+      - "8085:8000"   # cambia la porta a sinistra se è già occupata

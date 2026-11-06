@@ -37,7 +37,7 @@ unirne più di uno, togliere una pagina, cambiare l'ordine.
 Servono solo Docker e Docker Compose.
 
 ```bash
-git clone https://github.com/TUO-UTENTE/pdftool.git
+git clone https://github.com/rubinog/pdftool.git
 cd pdftool
 docker compose up -d --build
 ```

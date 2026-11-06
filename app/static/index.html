@@ -57,10 +57,10 @@
   .page.target { border-color: var(--accent); }
   .thumb { position: relative; height: 160px; display: grid; place-items: center; background: var(--soft); border-radius: 10px; overflow: hidden; cursor: grab; padding: 10px; }
   .thumb img { max-width: 100%; max-height: 100%; background: #fff; border-radius: 3px; box-shadow: 0 3px 10px rgba(0, 0, 0, .22); transition: transform .2s; }
-  .num { position: absolute; top: 6px; left: 6px; min-width: 26px; height: 26px; padding: 0 7px; display: grid; place-items: center; border-radius: 13px; background: var(--accent); color: #fff; font-size: .8rem; font-weight: 700; }
-  .tag { position: absolute; top: 6px; right: 6px; padding: 1px 8px; border-radius: 10px; background: #fff; color: var(--accent); font-size: .7rem; font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, .2); }
+  .num { position: absolute; z-index: 2; top: 6px; left: 6px; min-width: 26px; height: 26px; padding: 0 7px; display: grid; place-items: center; border-radius: 13px; background: var(--accent); color: #fff; font-size: .8rem; font-weight: 700; }
+  .tag { position: absolute; z-index: 2; border: 1px solid var(--line); top: 6px; right: 6px; padding: 1px 8px; border-radius: 10px; background: #fff; color: var(--accent); font-size: .7rem; font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, .2); }
   .meta { margin-top: 6px; font-size: .8rem; color: var(--muted); text-align: center; }
-  .tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+  .tools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 6px; }
   .tools button { padding: 5px 0; border-radius: 10px; display: grid; place-items: center; }
   .tools .del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
   @media (hover: hover) { .tools { opacity: 0; transition: opacity .15s; } .page:hover .tools, .page:focus-within .tools { opacity: 1; } }
@@ -92,6 +92,25 @@
   dialog label { display: block; margin-bottom: 10px; }
   .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
   .dlg-actions .ok { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 650; }
+  dialog.prev { padding: 0; width: fit-content; min-width: min(340px, 96vw); max-width: 96vw; overflow: hidden; }
+  .prev .head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .prev .head b { flex: 1; }
+  .prev .head button { padding: 6px 12px; display: grid; place-items: center; }
+  .prevbox { position: relative; margin: 0 auto; overflow: hidden; background: var(--soft); } /* larghezza e altezza le imposta fitPreview() */
+  .prevbox img { position: absolute; left: 50%; top: 50%; background: #fff; box-shadow: 0 4px 20px rgba(0, 0, 0, .25); }
+  #prevMsg { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); padding: 3px 12px; border-radius: 12px; background: var(--panel); color: var(--muted); font-size: .85rem; }
+  #prevMsg:empty { display: none; }
+  [hidden] { display: none !important; }
+  .grid { user-select: none; }
+  .page { cursor: pointer; }
+  .page.sel { border-color: var(--accent); background: var(--soft); }
+  .page.sel .thumb::after { content: "✓"; position: absolute; z-index: 2; right: 6px; bottom: 6px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; }
+  .selbar { position: sticky; top: 8px; z-index: 4; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 12px; border-radius: 14px; background: var(--accent); color: #fff; box-shadow: var(--shadow); }
+  .selbar b { margin-right: auto; }
+  .selbar button { padding: 5px 12px; font-size: .9rem; background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .35); color: #fff; }
+  .selbar button:hover:not(:disabled) { background: rgba(255, 255, 255, .28); border-color: #fff; }
+  .count small { font-weight: 400; color: var(--muted); }
+  @media (max-width: 600px) { .count small { display: none; } }
   @keyframes p { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
   @media (prefers-reduced-motion: reduce) { .prog::after { animation: none; width: 100%; } .thumb img, .page, .drop { transition: none; } }
 </style>
@@ -125,10 +144,20 @@
     <div class="toolbar" id="toolbar" hidden>
       <span class="count" id="count"></span>
       <div class="actions">
+        <button type="button" id="selAll" title="Clic su una pagina per selezionarla, Maiusc+clic per un intervallo">Seleziona tutte</button>
         <button type="button" id="sortName">Ordina per nome</button>
         <button type="button" id="sortDate">Ordina per data</button>
         <button type="button" id="clear">Elimina tutte</button>
       </div>
+    </div>
+    <div class="selbar" id="selbar" hidden>
+      <b id="selCount"></b>
+      <button type="button" id="selRot">Ruota</button>
+      <button type="button" id="selTop">All'inizio</button>
+      <button type="button" id="selEnd">Alla fine</button>
+      <button type="button" id="selInv">Inverti</button>
+      <button type="button" id="selDel">Elimina</button>
+      <button type="button" id="selNone">Annulla</button>
     </div>
     <div class="grid" id="grid"></div>
   </section>
@@ -176,6 +205,16 @@
   </div>
 </div>
 
+<dialog id="prevDlg" class="prev">
+  <div class="head">
+    <b id="prevTitle"></b>
+    <button type="button" id="prevPrev" aria-label="Pagina precedente"></button>
+    <button type="button" id="prevNext" aria-label="Pagina successiva"></button>
+    <button type="button" id="prevClose" aria-label="Chiudi"></button>
+  </div>
+  <div class="prevbox"><img id="prevImg" alt="Anteprima della pagina"><span id="prevMsg" role="status"></span></div>
+</dialog>
+
 <dialog id="nameDlg">
   <form method="dialog" id="nameForm">
     <label for="name"><b>Con che nome salvo il PDF?</b></label>
@@ -198,6 +237,8 @@ const ICON = {
   left: svg('<path d="M15 18l-6-6 6-6"/>'),
   right: svg('<path d="M9 18l6-6-6-6"/>'),
   rot: svg('<path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/>'),
+  zoom: svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/>'),
+  close: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
   del: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3"/>'),
 };
 
@@ -245,7 +286,7 @@ function render() {
   grid.innerHTML = "";
   pages.forEach((p, i) => {
     const el = document.createElement("div");
-    el.className = "page";
+    el.className = "page" + (selected.has(p.id) ? " sel" : "");
     el.draggable = true;
     const isPdf = p.page !== null;
     el.innerHTML = `
@@ -255,16 +296,19 @@ function render() {
         <button type="button" data-a="left" aria-label="Sposta prima" ${i === 0 ? "disabled" : ""}>${ICON.left}</button>
         <button type="button" data-a="right" aria-label="Sposta dopo" ${i === pages.length - 1 ? "disabled" : ""}>${ICON.right}</button>
         <button type="button" data-a="rot" aria-label="Ruota di 90 gradi">${ICON.rot}</button>
+        <button type="button" data-a="zoom" aria-label="Anteprima grande">${ICON.zoom}</button>
         <button type="button" class="del" data-a="del" aria-label="Elimina pagina">${ICON.del}</button>
       </div>`;
     el.addEventListener("click", (e) => {
       const a = e.target.closest("button")?.dataset.a;
-      if (!a) return;
+      if (!a) { toggleSel(i, e.shiftKey); return; }
       if (a === "left") move(i, i - 1);
       if (a === "right") move(i, i + 1);
       if (a === "rot") { p.rot = (p.rot + 90) % 360; render(); }
-      if (a === "del") { URL.revokeObjectURL(p.url); pages.splice(i, 1); render(); }
+      if (a === "zoom") openPreview(i);
+      if (a === "del") { URL.revokeObjectURL(p.url); dropPreview(p.id); selected.delete(p.id); pages.splice(i, 1); render(); }
     });
+    el.addEventListener("dblclick", (e) => { if (!e.target.closest("button")) openPreview(i); });
     el.addEventListener("dragstart", () => { dragFrom = i; el.classList.add("dragging"); });
     el.addEventListener("dragend", () => { dragFrom = null; el.classList.remove("dragging"); });
     el.addEventListener("dragover", (e) => { if (dragFrom !== null) { e.preventDefault(); el.classList.add("target"); } });
@@ -272,21 +316,147 @@ function render() {
     el.addEventListener("drop", (e) => {
       if (dragFrom === null) return;
       e.preventDefault(); e.stopPropagation();
-      move(dragFrom, i);
+      dropSelected(dragFrom, i);
     });
     grid.appendChild(el);
   });
   const n = pages.length;
   $("toolbar").hidden = n === 0;
-  $("count").textContent = n === 1 ? "1 pagina" : `${n} pagine`;
+  $("count").innerHTML = (n === 1 ? "1 pagina" : `${n} pagine`) + " <small>· clic per selezionare, Maiusc+clic per un intervallo</small>";
+  lastSel = -1;
   $("barinfo").textContent = n ? (n === 1 ? "1 pagina pronta" : `${n} pagine pronte`) : "Aggiungi file per iniziare";
   $("go").disabled = n === 0;
+  updateSel();
+}
+
+// ---- selezione multipla ----
+const selected = new Set(); // id delle pagine selezionate
+let lastSel = -1;
+function updateSel() {
+  const kids = $("grid").children;
+  pages.forEach((p, k) => kids[k]?.classList.toggle("sel", selected.has(p.id)));
+  const n = selected.size;
+  $("selbar").hidden = n === 0;
+  $("selCount").textContent = n === 1 ? "1 selezionata" : `${n} selezionate`;
+}
+// si aggiornano solo le classi, senza ridisegnare la griglia: così il doppio clic per l'anteprima funziona
+function toggleSel(i, range) {
+  if (range && lastSel >= 0) {
+    for (let k = Math.min(lastSel, i); k <= Math.max(lastSel, i); k++) selected.add(pages[k].id);
+  } else {
+    const id = pages[i].id;
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+  }
+  lastSel = i;
+  updateSel();
+}
+function moveSelected(toTop) {
+  const sel = pages.filter((p) => selected.has(p.id)), rest = pages.filter((p) => !selected.has(p.id));
+  pages = toTop ? [...sel, ...rest] : [...rest, ...sel];
+  render();
+}
+// trascinando una pagina selezionata si sposta tutto il gruppo
+function dropSelected(from, to) {
+  if (!selected.has(pages[from].id) || selected.size < 2) return move(from, to);
+  const t = pages[to];
+  if (selected.has(t.id)) return;
+  const block = pages.filter((p) => selected.has(p.id)), rest = pages.filter((p) => !selected.has(p.id));
+  rest.splice(rest.indexOf(t) + (from < to ? 1 : 0), 0, ...block);
+  pages = rest;
+  render();
+}
+$("selAll").onclick = () => { pages.forEach((p) => selected.add(p.id)); updateSel(); };
+$("selInv").onclick = () => { pages.forEach((p) => (selected.has(p.id) ? selected.delete(p.id) : selected.add(p.id))); updateSel(); };
+$("selNone").onclick = () => { selected.clear(); updateSel(); };
+$("selRot").onclick = () => { pages.forEach((p) => { if (selected.has(p.id)) p.rot = (p.rot + 90) % 360; }); render(); };
+$("selTop").onclick = () => moveSelected(true);
+$("selEnd").onclick = () => moveSelected(false);
+$("selDel").onclick = () => {
+  const n = selected.size;
+  if (n >= 5 && !confirm(`Eliminare ${n} pagine?`)) return;
+  pages = pages.filter((p) => {
+    if (!selected.has(p.id)) return true;
+    URL.revokeObjectURL(p.url); dropPreview(p.id);
+    return false;
+  });
+  selected.clear();
+  render();
+};
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && selected.size && !document.querySelector("dialog[open]")) { selected.clear(); updateSel(); }
+});
+
+// ---- anteprima ingrandita (doppio clic o pulsante lente) ----
+const prevCache = new Map(); // id pagina -> URL dell'immagine ad alta risoluzione
+let prevIdx = -1;
+function dropPreview(id) { const u = prevCache.get(id); if (u) { URL.revokeObjectURL(u); prevCache.delete(id); } }
+$("prevPrev").innerHTML = ICON.left; $("prevNext").innerHTML = ICON.right; $("prevClose").innerHTML = ICON.close;
+$("prevClose").onclick = () => $("prevDlg").close();
+$("prevPrev").onclick = () => openPreview(prevIdx - 1);
+$("prevNext").onclick = () => openPreview(prevIdx + 1);
+$("prevDlg").addEventListener("click", (e) => { if (e.target === $("prevDlg")) $("prevDlg").close(); });
+document.addEventListener("keydown", (e) => {
+  if (!$("prevDlg").open) return;
+  if (e.key === "ArrowLeft") openPreview(prevIdx - 1);
+  if (e.key === "ArrowRight") openPreview(prevIdx + 1);
+});
+
+let prevRot = 0;
+// La finestra prende la forma della pagina (già ruotata): si calcola la scala che la fa stare nello schermo.
+function fitPreview() {
+  const img = $("prevImg");
+  if (!$("prevDlg").open || !img.naturalWidth) return;
+  const side = prevRot % 180 !== 0, pad = 28;
+  const nw = img.naturalWidth, nh = img.naturalHeight;
+  const vw = side ? nh : nw, vh = side ? nw : nh; // dimensioni come si vedono dopo la rotazione
+  const s = Math.min((Math.min(innerWidth * 0.94, 1100) - pad) / vw, (innerHeight * 0.8 - pad) / vh);
+  const box = $("prevImg").parentElement;
+  box.style.width = vw * s + pad + "px";
+  box.style.height = vh * s + pad + "px";
+  img.style.width = nw * s + "px";
+  img.style.height = nh * s + "px";
+  img.style.transform = `translate(-50%, -50%) rotate(${prevRot}deg)`;
+}
+$("prevImg").addEventListener("load", fitPreview);
+window.addEventListener("resize", fitPreview);
+
+async function openPreview(i) {
+  const p = pages[i];
+  if (!p) return;
+  prevIdx = i;
+  const img = $("prevImg"), msg = $("prevMsg");
+  $("prevTitle").textContent = `Pagina ${i + 1} di ${pages.length}`;
+  $("prevPrev").disabled = i === 0;
+  $("prevNext").disabled = i === pages.length - 1;
+  prevRot = p.rot;
+  if (!$("prevDlg").open) $("prevDlg").showModal();
+  let url = p.page === null ? p.url : prevCache.get(p.id);
+  if (!url) {
+    img.src = p.url; // mentre arriva quella grande, mostra la miniatura
+    msg.textContent = "Carico l'anteprima…";
+    try {
+      const fd = new FormData();
+      fd.append("file", p.file, p.file.name);
+      fd.append("page", p.page);
+      const res = await fetch("/api/preview", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Anteprima non disponibile.");
+      url = URL.createObjectURL(await res.blob());
+      prevCache.set(p.id, url);
+    } catch (e) {
+      if (prevIdx === i) msg.textContent = e.message;
+      return;
+    }
+  }
+  if (prevIdx !== i) return; // nel frattempo si è passati a un'altra pagina
+  msg.textContent = "";
+  img.src = url;
+  if (img.complete) fitPreview();
 }
 
 const collator = new Intl.Collator("it", { numeric: true, sensitivity: "base" });
 $("sortName").onclick = () => { pages.sort((a, b) => collator.compare(a.file.name, b.file.name)); render(); };
 $("sortDate").onclick = () => { pages.sort((a, b) => a.file.lastModified - b.file.lastModified); render(); };
-function resetAll() { pages.forEach((p) => URL.revokeObjectURL(p.url)); pages = []; setStatus(""); render(); }
+function resetAll() { pages.forEach((p) => { URL.revokeObjectURL(p.url); dropPreview(p.id); }); pages = []; selected.clear(); setStatus(""); render(); }
 $("clear").onclick = () => { if (confirm("Eliminare tutte le pagine e ricominciare?")) resetAll(); };
 
 $("pick").onclick = () => $("file").click();

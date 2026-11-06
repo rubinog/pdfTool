@@ -10,7 +10,7 @@ from typing import List
 
 import img2pdf
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 import pymupdf
 from PIL import Image, ImageOps
@@ -139,6 +139,25 @@ def thumbs(file: UploadFile = File(...)):
         out.append("data:image/jpeg;base64," + base64.b64encode(pix.tobytes("jpeg", jpg_quality=70)).decode())
     doc.close()
     return {"thumbs": out}
+
+
+@app.post("/api/preview")
+def preview(file: UploadFile = File(...), page: int = Form(0)):
+    """Una singola pagina di un PDF a risoluzione alta (JPEG), per l'anteprima ingrandita."""
+    data = file.file.read()
+    try:
+        doc = pymupdf.open(stream=data, filetype="pdf")
+    except Exception:
+        raise HTTPException(400, "Il file non è un PDF valido.")
+    if doc.needs_pass:
+        raise HTTPException(400, "Il PDF è protetto da password: non è supportato.")
+    if not 0 <= page < len(doc):
+        raise HTTPException(400, "Pagina inesistente.")
+    pg = doc[page]
+    zoom = min(1400 / max(pg.rect.width, 1), 3)
+    pix = pg.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False)
+    doc.close()
+    return Response(pix.tobytes("jpeg", jpg_quality=85), media_type="image/jpeg")
 
 
 @app.post("/api/convert")
